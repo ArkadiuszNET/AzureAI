@@ -17,7 +17,7 @@ var speechClient = SpeechClientFactory.Create();
 var speechRecognizerClient = SpeechClientFactory.CreateRecognizer();
 var (translateSyntethizerClient, translateClient) = SpeechClientFactory.CreateTranslator();
 
-var serviceToRun = ServiceType.ImageThumbnail;
+var serviceToRun = ServiceType.FacialAttributes;
 
 switch(serviceToRun)
 {
@@ -37,6 +37,7 @@ switch(serviceToRun)
         await ExecuteImageThumbnail();
         break;
     case ServiceType.FacialAttributes:
+        await ExecuteFacialAttributes(); //won't work till form of usage is filled
         break;
     case ServiceType.CustomVision:
         break;
@@ -335,4 +336,27 @@ async Task ExecuteImageThumbnail()
     var createdFile = File.Create(outputFilePath);
     await response.CopyToAsync(createdFile);
     createdFile.Close();
+}
+
+async Task ExecuteFacialAttributes()
+{
+    // woman with mask
+    var imageUrl = "https://scitechdaily.com/images/Woman-Putting-on-COVID-Face-Mask.jpg";
+    var facialAttributesService = new FacialAttributes(faceClient);
+
+    var result = await facialAttributesService.SendWebImage(imageUrl);
+
+    Console.WriteLine($"Detected faces count: {result.Count}");
+
+    foreach(var face in result)
+    {
+        Console.WriteLine("Face attributes:");
+        Console.WriteLine($"Makeup: Eye: {face.FaceAttributes.Makeup.EyeMakeup} Lip: {face.FaceAttributes.Makeup.LipMakeup}");
+        Console.WriteLine($"Age: {face.FaceAttributes.Age}");
+        Console.WriteLine($"Accessories: {face.FaceAttributes.Accessories}");
+        foreach(var accessory in face.FaceAttributes.Accessories){
+            Console.WriteLine($"{accessory.Type} - {accessory.Confidence}");
+        }
+        Console.WriteLine($"Gender: {face.FaceAttributes.Gender.GetValueOrDefault()}");
+    }
 }
