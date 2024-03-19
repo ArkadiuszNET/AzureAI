@@ -2,9 +2,7 @@
 using AzureAIServices.ClientFactories;
 using AzureAIServices.Services.ComputerVision;
 using AzureAIServices.Services.FacialRecognition;
-using AzureAIServices.Options;
 using Microsoft.CognitiveServices.Speech;
-using Microsoft.CognitiveServices.Speech.Audio;
 using Microsoft.CognitiveServices.Speech.Translation;
 using AzureAIServices.Services;
 using AzureAIServices.Services.CustomVision;
@@ -17,7 +15,7 @@ var languageClient = LanguageClientFactory.Create();
 var speechRecognizerClient = SpeechClientFactory.CreateRecognizer();
 var (translateSyntethizerClient, translateClient) = SpeechClientFactory.CreateTranslator();
 
-var serviceToRun = ServiceType.SpeechToText;
+var serviceToRun = ServiceType.SpeechToSpeechTranslation;
 
 switch(serviceToRun)
 {
@@ -58,51 +56,12 @@ switch(serviceToRun)
         await ExecuteSpeechToText();
         break;
     case ServiceType.SpeechToSpeechTranslation:
+        await ExecuteSpeechToSpeechTranslation();
         break;
     default:
         Console.WriteLine($"Unhandled service type: {serviceToRun}");
         break;
 }
-
-
-
-
-#region Speech to speech translation
-
-// Console.WriteLine("Speak...");
-
-// var result = await translateClient.RecognizeOnceAsync();
-
-// Console.WriteLine("Processing...");
-
-// await OutputSpeechSynthesisResult(result);
-
-// async Task OutputSpeechSynthesisResult(TranslationRecognitionResult result)
-// {
-//     switch (result.Reason)
-//     {
-//         case ResultReason.TranslatedSpeech:
-//             Console.WriteLine($"Speech recognized: {result.Text}");
-
-//             foreach(var key in result.Translations){
-//                 Console.WriteLine($"Translated into {key.Key} - {key.Value}");
-//                 await translateSyntethizerClient.SpeakTextAsync(key.Value);
-//             }
-
-//             break;
-//         case ResultReason.Canceled:
-//             Console.WriteLine($"CANCELED: Reason={result.Reason}");
-//             break;
-//         case ResultReason.NoMatch:
-//             Console.WriteLine($"Not match: Reason={result.Reason}");
-//             break;
-//         default:
-//             Console.WriteLine($"Unknown result: Reason={result.Reason}");
-//             break;
-//     }
-// }
-
-#endregion
 
 Console.WriteLine("----------------------------------------------------------");
 Console.WriteLine();
@@ -341,6 +300,42 @@ async Task ExecuteSpeechToText()
                 Console.WriteLine($"Not match: Reason={speechSynthesisResult.Reason}");
                 break;
             default:
+                break;
+        }
+    }
+}
+
+async Task ExecuteSpeechToSpeechTranslation()
+{
+    Console.WriteLine("Speak to microphone in polish language...");
+
+    var result = await translateClient.RecognizeOnceAsync();
+
+    Console.WriteLine("Processing...");
+
+    await OutputSpeechSynthesisResult(result);
+
+    async Task OutputSpeechSynthesisResult(TranslationRecognitionResult result)
+    {
+        switch (result.Reason)
+        {
+            case ResultReason.TranslatedSpeech:
+                Console.WriteLine($"Speech recognized: {result.Text}");
+
+                foreach(var key in result.Translations){
+                    Console.WriteLine($"Translated into {key.Key} - {key.Value}");
+                    await translateSyntethizerClient.SpeakTextAsync(key.Value);
+                }
+
+                break;
+            case ResultReason.Canceled:
+                Console.WriteLine($"CANCELED: Reason={result.Reason}");
+                break;
+            case ResultReason.NoMatch:
+                Console.WriteLine($"Not match: Reason={result.Reason}");
+                break;
+            default:
+                Console.WriteLine($"Unknown result: Reason={result.Reason}");
                 break;
         }
     }
