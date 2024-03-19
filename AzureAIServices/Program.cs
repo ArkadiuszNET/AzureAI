@@ -17,34 +17,20 @@ var speechClient = SpeechClientFactory.Create();
 var speechRecognizerClient = SpeechClientFactory.CreateRecognizer();
 var (translateSyntethizerClient, translateClient) = SpeechClientFactory.CreateTranslator();
 
-var serviceToRun = ServiceType.OCR;
+var serviceToRun = ServiceType.ImageTagging;
 
 switch(serviceToRun)
 {
     case ServiceType.OCR:
         await ExecuteOCR();
         break;
+    case ServiceType.ImageTagging:
+        await ExecuteImageTagging();
+        break;
     default:
         Console.WriteLine($"Unhandled service type: {serviceToRun}");
         break;
 }
-
-#region  Computer vision - OCR
-
-// var analyzeImageService = new ImageOCR(computerVisionClient);
-// var acceptedOperationId = await analyzeImageService.SendWebImage("https://d1fa9n6k2ql7on.cloudfront.net/H0O8LX1S0W4MYIT1661555421.png");
-// var result = await analyzeImageService.GetImageAnalysis(acceptedOperationId);
-
-// Console.WriteLine("Image OCR analysis result");
-// Console.WriteLine();
-
-// var lines = result.AnalyzeResult.ReadResults.SelectMany(x => x.Lines);
-
-// foreach(var line in lines){
-//     Console.WriteLine(line.Text);
-// }
-
-#endregion
 
 #region Image tagging
 // var imageTaggingService = new ImageTagging(computerVisionClient);
@@ -308,5 +294,20 @@ async Task ExecuteOCR()
 
     foreach(var line in lines){
         Console.WriteLine(line.Text);
+    }
+}
+
+async Task ExecuteImageTagging()
+{
+    // women photo
+    var imageUrlToAnalyze = "https://images.unsplash.com/photo-1599140781162-68659a79e313?q=80&w=2976&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
+
+    var computerVisionClient = ComputerVisionClientFactory.Create();
+    var imageTaggingService = new ImageTagging(computerVisionClient);
+    var imageTags = await imageTaggingService.SendWebImage(imageUrlToAnalyze);
+    Console.WriteLine("Image tags: ");
+
+    foreach(var tag in imageTags){
+        Console.WriteLine($"{tag.Name} - {tag.Confidence} [{tag.Hint}]");
     }
 }
