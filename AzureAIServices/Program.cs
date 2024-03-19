@@ -7,15 +7,10 @@ using Microsoft.CognitiveServices.Speech.Translation;
 using AzureAIServices.Services;
 using AzureAIServices.Services.CustomVision;
 
+var serviceToRun = ServiceType.OCR;
+
 Console.WriteLine("Azure Cognitive Services - .NET quickstart example");
 Console.WriteLine();
-
-var faceClient = FaceClientFactory.Create();
-var languageClient = LanguageClientFactory.Create();
-var speechRecognizerClient = SpeechClientFactory.CreateRecognizer();
-var (translateSyntethizerClient, translateClient) = SpeechClientFactory.CreateTranslator();
-
-var serviceToRun = ServiceType.SpeechToSpeechTranslation;
 
 switch(serviceToRun)
 {
@@ -160,6 +155,8 @@ async Task ExecuteFacialAttributes()
 {
     // woman with mask
     var imageUrl = "https://scitechdaily.com/images/Woman-Putting-on-COVID-Face-Mask.jpg";
+
+    var faceClient = FaceClientFactory.Create();
     var facialAttributesService = new FacialAttributes(faceClient);
 
     var result = await facialAttributesService.SendWebImage(imageUrl);
@@ -206,6 +203,7 @@ async Task ExecuteExtractEntityInformation()
 {
     var textToDetect = "Microsoft Azure, often referred to as Azure is a cloud computing platform run by Microsoft. It offers access, management, and the development of applications and services through global data centers. It also provides a range of capabilities, including software as a service (SaaS), platform as a service (PaaS), and infrastructure as a service (IaaS). Microsoft Azure supports many programming languages, tools, and frameworks, including Microsoft-specific and third-party software and systems. Azure was first introduced at the Professional Developers Conference (PDC) in October 2008 under the codename 'Project Red Dog.' It was officially launched as Windows Azure in February 2010 and later renamed Microsoft Azure on March 25, 2014";
 
+    var languageClient = LanguageClientFactory.Create();
     var response = await languageClient.RecognizeEntitiesAsync(textToDetect);
 
     Console.WriteLine($"Text to detect: \n\n{textToDetect}\n\n");
@@ -223,6 +221,7 @@ async Task ExecuteSentimentAnalysis()
         IncludeStatistics = true,
     };
 
+    var languageClient = LanguageClientFactory.Create();
     var response = await languageClient.AnalyzeSentimentAsync(sentimentInput, "en", options);
 
     Console.WriteLine($"The opinion: {sentimentInput}");
@@ -237,6 +236,7 @@ async Task ExecuteLanguageDetection()
 {
     var languageDetectInput = "Mucho gusto, mi nombre es";
 
+    var languageClient = LanguageClientFactory.Create();
     var response = await languageClient.DetectLanguageAsync(languageDetectInput, null, CancellationToken.None);
 
     Console.WriteLine($"The language: {response.Value.Name}[{response.Value.Iso6391Name}] - {response.Value.ConfidenceScore}");
@@ -280,6 +280,7 @@ async Task ExecuteSpeechToText()
 {
     Console.WriteLine("Speak to microphone...");
 
+    var speechRecognizerClient = SpeechClientFactory.CreateRecognizer();
     var result = await speechRecognizerClient.RecognizeOnceAsync();
 
     Console.WriteLine("Processing...");
@@ -307,6 +308,8 @@ async Task ExecuteSpeechToText()
 
 async Task ExecuteSpeechToSpeechTranslation()
 {
+    var (translateSyntethizerClient, translateClient) = SpeechClientFactory.CreateTranslator();
+
     Console.WriteLine("Speak to microphone in polish language...");
 
     var result = await translateClient.RecognizeOnceAsync();
