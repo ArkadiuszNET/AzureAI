@@ -18,7 +18,7 @@ var speechClient = SpeechClientFactory.Create();
 var speechRecognizerClient = SpeechClientFactory.CreateRecognizer();
 var (translateSyntethizerClient, translateClient) = SpeechClientFactory.CreateTranslator();
 
-var serviceToRun = ServiceType.ExtractEntityInformation;
+var serviceToRun = ServiceType.LanguageDetection;
 
 switch(serviceToRun)
 {
@@ -47,8 +47,10 @@ switch(serviceToRun)
         await ExecuteExtractEntityInformation();
         break;
     case ServiceType.SentimentAnalysis:
+        await ExecuteSentimentAnalysis();
         break;
     case ServiceType.LanguageDetection:
+        await ExecuteLanguageDetection();
         break;
     case ServiceType.TextToSpeech:
         break;
@@ -62,48 +64,6 @@ switch(serviceToRun)
 }
 
 
-#region Extract entity information 
-
-// var textToDetect = "Microsoft Azure, often referred to as Azure is a cloud computing platform run by Microsoft. It offers access, management, and the development of applications and services through global data centers. It also provides a range of capabilities, including software as a service (SaaS), platform as a service (PaaS), and infrastructure as a service (IaaS). Microsoft Azure supports many programming languages, tools, and frameworks, including Microsoft-specific and third-party software and systems. Azure was first introduced at the Professional Developers Conference (PDC) in October 2008 under the codename 'Project Red Dog.' It was officially launched as Windows Azure in February 2010 and later renamed Microsoft Azure on March 25, 2014";
-
-// var response = await languageClient.RecognizeEntitiesAsync(textToDetect);
-
-// Console.WriteLine($"Text to detect: \n\n{textToDetect}\n\n");
-
-// foreach(var phrase in response.Value){
-//     Console.WriteLine($"{phrase.Text} - {phrase.Category}[{phrase.SubCategory}] - {phrase.ConfidenceScore}");
-// }
-
-#endregion
-
-#region Sentiment analysis
-
-// var sentimentInput = "The recuritment process consisting of interview with HR department is a waste of time - but might be beneficial for company maybe";
-// var options = new AnalyzeSentimentOptions
-// {
-//     IncludeStatistics = true,
-// };
-
-// var response = await languageClient.AnalyzeSentimentAsync(sentimentInput, "en", options);
-
-// Console.WriteLine($"The opinion: {sentimentInput}");
-// Console.WriteLine($"Sentiment: {response.Value.Sentiment}");
-
-// Console.WriteLine($"Positive score: {response.Value.ConfidenceScores.Positive}");
-// Console.WriteLine($"Neutral score:  {response.Value.ConfidenceScores.Neutral}");
-// Console.WriteLine($"Negative score:  {response.Value.ConfidenceScores.Negative}");
-
-#endregion
-
-#region Language detection - it's doable in batch too
-
-// var languageDetectInput = "Mucho gusto, mi nombre es";
-
-// var response = await languageClient.DetectLanguageAsync(languageDetectInput, null, CancellationToken.None);
-
-// Console.WriteLine($"The language: {response.Value.Name}[{response.Value.Iso6391Name}] - {response.Value.ConfidenceScore}");
-
-#endregion
 
 #region Text to speech
 
@@ -355,4 +315,31 @@ async Task ExecuteExtractEntityInformation()
     foreach(var phrase in response.Value){
         Console.WriteLine($"{phrase.Text} - {phrase.Category}[{phrase.SubCategory}] - {phrase.ConfidenceScore}");
     }
+}
+
+async Task ExecuteSentimentAnalysis()
+{
+    var sentimentInput = "The recuritment process consisting of interview with HR department is a waste of time - but might be beneficial for company maybe";
+    var options = new AnalyzeSentimentOptions
+    {
+        IncludeStatistics = true,
+    };
+
+    var response = await languageClient.AnalyzeSentimentAsync(sentimentInput, "en", options);
+
+    Console.WriteLine($"The opinion: {sentimentInput}");
+    Console.WriteLine($"Sentiment: {response.Value.Sentiment}");
+
+    Console.WriteLine($"Positive score: {response.Value.ConfidenceScores.Positive}");
+    Console.WriteLine($"Neutral score:  {response.Value.ConfidenceScores.Neutral}");
+    Console.WriteLine($"Negative score:  {response.Value.ConfidenceScores.Negative}");
+}
+
+async Task ExecuteLanguageDetection()
+{
+    var languageDetectInput = "Mucho gusto, mi nombre es";
+
+    var response = await languageClient.DetectLanguageAsync(languageDetectInput, null, CancellationToken.None);
+
+    Console.WriteLine($"The language: {response.Value.Name}[{response.Value.Iso6391Name}] - {response.Value.ConfidenceScore}");
 }
