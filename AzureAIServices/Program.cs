@@ -17,7 +17,7 @@ var speechClient = SpeechClientFactory.Create();
 var speechRecognizerClient = SpeechClientFactory.CreateRecognizer();
 var (translateSyntethizerClient, translateClient) = SpeechClientFactory.CreateTranslator();
 
-var serviceToRun = ServiceType.ImageAnalyze;
+var serviceToRun = ServiceType.ImageThumbnail;
 
 switch(serviceToRun)
 {
@@ -33,21 +33,30 @@ switch(serviceToRun)
     case ServiceType.ImageAnalyze:
         await ExecuteImageAnalyze();
         break;
+    case ServiceType.ImageThumbnail:
+        await ExecuteImageThumbnail();
+        break;
+    case ServiceType.FacialAttributes:
+        break;
+    case ServiceType.CustomVision:
+        break;
+    case ServiceType.ExtractEntityInformation:
+        break;
+    case ServiceType.SentimentAnalysis:
+        break;
+    case ServiceType.LanguageDetection:
+        break;
+    case ServiceType.TextToSpeech:
+        break;
+    case ServiceType.SpeechToText:
+        break;
+    case ServiceType.SpeechToSpeechTranslation:
+        break;
     default:
         Console.WriteLine($"Unhandled service type: {serviceToRun}");
         break;
 }
 
-#region Image thumbnail
-
-// var service = new ImageThumbnail(computerVisionClient);
-// var response = await service.SendWebImage("https://plus.unsplash.com/premium_photo-1686754185788-12b50c02521a?q=80&w=3270&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D");
-
-// var createdFile = File.Create("/Users/arkadiuszoleksy/Desktop/thumb.png");
-// await response.CopyToAsync(createdFile);
-// createdFile.Close();
-
-#endregion
 
 #region Facial attributes - it won't work till form of usage is filled
 // var facialAttributesService = new FacialAttributes(faceClient);
@@ -312,4 +321,18 @@ async Task ExecuteImageAnalyze()
     Console.WriteLine($"Is Racy: {response.Adult.IsRacyContent} - [{response.Adult.RacyScore}]");
     Console.WriteLine($"Is Gore: {response.Adult.IsGoryContent} - [{response.Adult.GoreScore}]");
     Console.WriteLine($"Is Adult: {response.Adult.IsAdultContent} - [{response.Adult.AdultScore}]");
+}
+
+async Task ExecuteImageThumbnail()
+{
+    var imageUrl = "https://plus.unsplash.com/premium_photo-1686754185788-12b50c02521a?q=80&w=3270&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
+    var outputFilePath = "/Users/arkadiuszoleksy/Desktop/thumb.png";
+
+    var computerVisionClient = ComputerVisionClientFactory.Create();
+    var service = new ImageThumbnail(computerVisionClient);
+    var response = await service.SendWebImage(imageUrl);
+
+    var createdFile = File.Create(outputFilePath);
+    await response.CopyToAsync(createdFile);
+    createdFile.Close();
 }

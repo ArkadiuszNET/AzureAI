@@ -5,5 +5,14 @@ public enum ServiceType
     OCR,
     ImageTagging,
     ImageDescribing,
-    ImageAnalyze
+    ImageAnalyze,
+    ImageThumbnail,
+    FacialAttributes,
+    CustomVision,
+    ExtractEntityInformation,
+    SentimentAnalysis,
+    LanguageDetection,
+    TextToSpeech,
+    SpeechToText,
+    SpeechToSpeechTranslation
 }   
