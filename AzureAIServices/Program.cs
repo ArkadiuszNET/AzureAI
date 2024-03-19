@@ -17,7 +17,7 @@ var languageClient = LanguageClientFactory.Create();
 var speechRecognizerClient = SpeechClientFactory.CreateRecognizer();
 var (translateSyntethizerClient, translateClient) = SpeechClientFactory.CreateTranslator();
 
-var serviceToRun = ServiceType.TextToSpeech;
+var serviceToRun = ServiceType.SpeechToText;
 
 switch(serviceToRun)
 {
@@ -55,6 +55,7 @@ switch(serviceToRun)
         await ExecuteTextToSpeech();
         break;
     case ServiceType.SpeechToText:
+        await ExecuteSpeechToText();
         break;
     case ServiceType.SpeechToSpeechTranslation:
         break;
@@ -64,35 +65,7 @@ switch(serviceToRun)
 }
 
 
-#region Speech to text
 
-// Console.WriteLine("Speak...");
-
-// var result = await speechRecognizerClient.RecognizeOnceAsync();
-
-// Console.WriteLine("Processing...");
-
-// OutputSpeechSynthesisResult(result);
-
-// static void OutputSpeechSynthesisResult(SpeechRecognitionResult speechSynthesisResult)
-// {
-//     switch (speechSynthesisResult.Reason)
-//     {
-//         case ResultReason.RecognizedSpeech:
-//             Console.WriteLine($"Speech recognized: {speechSynthesisResult.Text}");
-//             break;
-//         case ResultReason.Canceled:
-//             Console.WriteLine($"CANCELED: Reason={speechSynthesisResult.Reason}");
-//             break;
-//         case ResultReason.NoMatch:
-//             Console.WriteLine($"Not match: Reason={speechSynthesisResult.Reason}");
-//             break;
-//         default:
-//             break;
-//     }
-// }
-
-#endregion
 
 #region Speech to speech translation
 
@@ -337,6 +310,35 @@ async Task ExecuteTextToSpeech()
                     Console.WriteLine($"CANCELED: ErrorDetails=[{cancellation.ErrorDetails}]");
                     Console.WriteLine($"CANCELED: Did you set the speech resource key and region values?");
                 }
+                break;
+            default:
+                break;
+        }
+    }
+}
+
+async Task ExecuteSpeechToText()
+{
+    Console.WriteLine("Speak to microphone...");
+
+    var result = await speechRecognizerClient.RecognizeOnceAsync();
+
+    Console.WriteLine("Processing...");
+
+    OutputSpeechSynthesisResult(result);
+
+    static void OutputSpeechSynthesisResult(SpeechRecognitionResult speechSynthesisResult)
+    {
+        switch (speechSynthesisResult.Reason)
+        {
+            case ResultReason.RecognizedSpeech:
+                Console.WriteLine($"Speech recognized: {speechSynthesisResult.Text}");
+                break;
+            case ResultReason.Canceled:
+                Console.WriteLine($"CANCELED: Reason={speechSynthesisResult.Reason}");
+                break;
+            case ResultReason.NoMatch:
+                Console.WriteLine($"Not match: Reason={speechSynthesisResult.Reason}");
                 break;
             default:
                 break;
