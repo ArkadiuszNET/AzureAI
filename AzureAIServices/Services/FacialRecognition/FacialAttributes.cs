@@ -1,4 +1,4 @@
-namespace AzureAIServices.FacialRecognition;
+namespace AzureAIServices.Services.FacialRecognition;
 
 using Microsoft.Azure.CognitiveServices.Vision.Face.Models;
 using Microsoft.Azure.CognitiveServices.Vision.Face;
