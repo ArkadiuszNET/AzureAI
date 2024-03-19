@@ -1,4 +1,4 @@
-namespace AzureAIServices.ComputerVision;
+namespace AzureAIServices.Services.ComputerVision;
 
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;

@@ -1,6 +1,6 @@
 ﻿using Azure.AI.TextAnalytics;
 using AzureAIServices.ClientFactories;
-using AzureAIServices.ComputerVision;
+using AzureAIServices.Services.ComputerVision;
 using AzureAIServices.Services.FacialRecognition;
 using AzureAIServices.Options;
 using Microsoft.CognitiveServices.Speech;
