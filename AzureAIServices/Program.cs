@@ -7,6 +7,7 @@ using Microsoft.CognitiveServices.Speech;
 using Microsoft.CognitiveServices.Speech.Audio;
 using Microsoft.CognitiveServices.Speech.Translation;
 using AzureAIServices.Services;
+using AzureAIServices.Services.CustomVision;
 
 Console.WriteLine("Azure Cognitive Services - .NET quickstart example");
 Console.WriteLine();
@@ -17,7 +18,7 @@ var speechClient = SpeechClientFactory.Create();
 var speechRecognizerClient = SpeechClientFactory.CreateRecognizer();
 var (translateSyntethizerClient, translateClient) = SpeechClientFactory.CreateTranslator();
 
-var serviceToRun = ServiceType.FacialAttributes;
+var serviceToRun = ServiceType.CustomVision;
 
 switch(serviceToRun)
 {
@@ -40,6 +41,7 @@ switch(serviceToRun)
         await ExecuteFacialAttributes(); //won't work till form of usage is filled
         break;
     case ServiceType.CustomVision:
+        await ExecuteCustomVision();
         break;
     case ServiceType.ExtractEntityInformation:
         break;
@@ -58,49 +60,6 @@ switch(serviceToRun)
         break;
 }
 
-
-#region Facial attributes - it won't work till form of usage is filled
-// var facialAttributesService = new FacialAttributes(faceClient);
-
-// var result = await facialAttributesService.SendWebImage("https://scitechdaily.com/images/Woman-Putting-on-COVID-Face-Mask.jpg");
-
-// Console.WriteLine($"Detected faces count: {result.Count}");
-
-// foreach(var face in result)
-// {
-//     Console.WriteLine("Face attributes:");
-//     Console.WriteLine($"Makeup: Eye: {face.FaceAttributes.Makeup.EyeMakeup} Lip: {face.FaceAttributes.Makeup.LipMakeup}");
-//     Console.WriteLine($"Age: {face.FaceAttributes.Age}");
-//     Console.WriteLine($"Accessories: {face.FaceAttributes.Accessories}");
-//     foreach(var accessory in face.FaceAttributes.Accessories){
-//         Console.WriteLine($"{accessory.Type} - {accessory.Confidence}");
-//     }
-//     Console.WriteLine($"Gender: {face.FaceAttributes.Gender.GetValueOrDefault()}");
-// }
-
-#endregion
-
-#region Custom vision 
-
-// var service = new CustomVisionService();
-
-// var result = await service.SendWebImage("https://www.fruit4london.co.uk/cdn/shop/products/Pineapple.jpg?v=1683266629");
-
-// if(result != null)
-// {
-//     Console.WriteLine(result.Predictions);
-
-//     foreach(var prediction in result.Predictions)
-//     {
-//         Console.WriteLine($"Prediction: {prediction.TagName} - {prediction.Probability}");
-//     }
-// }
-// else
-// {
-//     Console.WriteLine("Custom vision - empty result");
-// }
-
-#endregion
 
 #region Extract entity information 
 
@@ -358,5 +317,28 @@ async Task ExecuteFacialAttributes()
             Console.WriteLine($"{accessory.Type} - {accessory.Confidence}");
         }
         Console.WriteLine($"Gender: {face.FaceAttributes.Gender.GetValueOrDefault()}");
+    }
+}
+
+async Task ExecuteCustomVision()
+{
+    // pineapple
+    var imageUrl = "https://www.fruit4london.co.uk/cdn/shop/products/Pineapple.jpg?v=1683266629";
+
+    var service = new CustomVisionService();
+    var result = await service.SendWebImage(imageUrl);
+
+    if(result != null)
+    {
+        Console.WriteLine(result.Predictions);
+
+        foreach(var prediction in result.Predictions)
+        {
+            Console.WriteLine($"Prediction: {prediction.TagName} - {prediction.Probability}");
+        }
+    }
+    else
+    {
+        Console.WriteLine("Custom vision - empty result");
     }
 }
