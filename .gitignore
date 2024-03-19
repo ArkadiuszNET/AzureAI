@@ -44,3 +44,4 @@ msbuild.wrn
 
 # Custom
 appsettings.local.json
+.DS_Store

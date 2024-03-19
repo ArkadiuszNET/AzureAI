@@ -12,7 +12,6 @@ Console.WriteLine();
 
 var computerVisionClient = ComputerVisionClientFactory.Create();
 var faceClient = FaceClientFactory.Create();
-var customVisionClient = CustomVisionClientFactory.Create();
 var languageClient = LanguageClientFactory.Create();
 var speechClient = SpeechClientFactory.Create();
 var speechRecognizerClient = SpeechClientFactory.CreateRecognizer();
