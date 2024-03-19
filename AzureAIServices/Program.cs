@@ -17,7 +17,7 @@ var speechClient = SpeechClientFactory.Create();
 var speechRecognizerClient = SpeechClientFactory.CreateRecognizer();
 var (translateSyntethizerClient, translateClient) = SpeechClientFactory.CreateTranslator();
 
-var serviceToRun = ServiceType.ImageDescribing;
+var serviceToRun = ServiceType.ImageAnalyze;
 
 switch(serviceToRun)
 {
@@ -30,42 +30,13 @@ switch(serviceToRun)
     case ServiceType.ImageDescribing:
         await ExecuteImageDescribing();
         break;
+    case ServiceType.ImageAnalyze:
+        await ExecuteImageAnalyze();
+        break;
     default:
         Console.WriteLine($"Unhandled service type: {serviceToRun}");
         break;
 }
-
-#region Image description 
-// var service = new ImageDescription(computerVisionClient);
-// var response = await service.SendWebImage("https://images.unsplash.com/photo-1480455624313-e29b44bbfde1?q=80&w=3270&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D");
-// Console.WriteLine("Image description: ");
-
-// foreach(var capition in response.Captions){
-//     Console.WriteLine($"{capition.Text} - {capition.Confidence}");
-// }
-
-// Console.WriteLine($"Tags: {string.Join(',',response.Tags)}");
-#endregion 
-
-#region Image analyze (gory, adult, race)
-
-// var service = new ImageAnalyze(computerVisionClient);
-// var response = await service.SendWebImage("https://ei.phncdn.com/pics/albums/076/336/501/835776331/(m=e-yaaGqaq)(mh=GT9BvbsZZ-6yoFXe)original_835776331.jpg");
-// //Console.WriteLine($"Image description: {response.Description.Captions}");
-
-// foreach(var @object in response.Objects){
-//     Console.WriteLine($"Object: {@object.ObjectProperty}");
-// }
-
-// foreach(var tag in response.Tags){
-//     Console.WriteLine($"Tag: {tag.Name} - {tag.Confidence}");
-// }
-
-// Console.WriteLine($"Is Racy: {response.Adult.IsRacyContent} - [{response.Adult.RacyScore}]");
-// Console.WriteLine($"Is Gore: {response.Adult.IsGoryContent} - [{response.Adult.GoreScore}]");
-// Console.WriteLine($"Is Adult: {response.Adult.IsAdultContent} - [{response.Adult.AdultScore}]");
-
-#endregion 
 
 #region Image thumbnail
 
@@ -319,4 +290,26 @@ async Task ExecuteImageDescribing()
     }
 
     Console.WriteLine($"Tags: {string.Join(',',response.Tags)}");
+}
+
+async Task ExecuteImageAnalyze()
+{
+    // small wound
+    var imageUrlToAnalyze = "https://www.ehbo.nl/media/1016/wond.png";
+
+    var computerVisionClient = ComputerVisionClientFactory.Create();
+    var service = new ImageAnalyze(computerVisionClient);
+    var response = await service.SendWebImage(imageUrlToAnalyze);
+
+    foreach(var @object in response.Objects){
+        Console.WriteLine($"Object: {@object.ObjectProperty}");
+    }
+
+    foreach(var tag in response.Tags){
+        Console.WriteLine($"Tag: {tag.Name} - {tag.Confidence}");
+    }
+
+    Console.WriteLine($"Is Racy: {response.Adult.IsRacyContent} - [{response.Adult.RacyScore}]");
+    Console.WriteLine($"Is Gore: {response.Adult.IsGoryContent} - [{response.Adult.GoreScore}]");
+    Console.WriteLine($"Is Adult: {response.Adult.IsAdultContent} - [{response.Adult.AdultScore}]");
 }
