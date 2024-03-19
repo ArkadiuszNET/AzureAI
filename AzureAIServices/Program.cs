@@ -6,16 +6,28 @@ using AzureAIServices.Options;
 using Microsoft.CognitiveServices.Speech;
 using Microsoft.CognitiveServices.Speech.Audio;
 using Microsoft.CognitiveServices.Speech.Translation;
+using AzureAIServices.Services;
 
 Console.WriteLine("Azure Cognitive Services - .NET quickstart example");
 Console.WriteLine();
 
-var computerVisionClient = ComputerVisionClientFactory.Create();
 var faceClient = FaceClientFactory.Create();
 var languageClient = LanguageClientFactory.Create();
 var speechClient = SpeechClientFactory.Create();
 var speechRecognizerClient = SpeechClientFactory.CreateRecognizer();
 var (translateSyntethizerClient, translateClient) = SpeechClientFactory.CreateTranslator();
+
+var serviceToRun = ServiceType.OCR;
+
+switch(serviceToRun)
+{
+    case ServiceType.OCR:
+        await ExecuteOCR();
+        break;
+    default:
+        Console.WriteLine($"Unhandled service type: {serviceToRun}");
+        break;
+}
 
 #region  Computer vision - OCR
 
@@ -35,13 +47,13 @@ var (translateSyntethizerClient, translateClient) = SpeechClientFactory.CreateTr
 #endregion
 
 #region Image tagging
-var imageTaggingService = new ImageTagging(computerVisionClient);
-var imageTags = await imageTaggingService.SendWebImage("https://images.unsplash.com/photo-1599140781162-68659a79e313?q=80&w=2976&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D");
-Console.WriteLine("Image tags: ");
+// var imageTaggingService = new ImageTagging(computerVisionClient);
+// var imageTags = await imageTaggingService.SendWebImage("https://images.unsplash.com/photo-1599140781162-68659a79e313?q=80&w=2976&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D");
+// Console.WriteLine("Image tags: ");
 
-foreach(var tag in imageTags){
-    Console.WriteLine($"{tag.Name} - {tag.Confidence} [{tag.Hint}]");
-}
+// foreach(var tag in imageTags){
+//     Console.WriteLine($"{tag.Name} - {tag.Confidence} [{tag.Hint}]");
+// }
 
 #endregion
 
@@ -278,3 +290,23 @@ Console.WriteLine("----------------------------------------------------------");
 Console.WriteLine();
 Console.WriteLine("Quickstart is complete.");
 Console.WriteLine();
+
+
+async Task ExecuteOCR()
+{
+    var imageUrlToAnalyze = "https://d1fa9n6k2ql7on.cloudfront.net/H0O8LX1S0W4MYIT1661555421.png"; //simple invoice file
+
+    var computerVisionClient = ComputerVisionClientFactory.Create();
+    var analyzeImageService = new ImageOCR(computerVisionClient);
+    var acceptedOperationId = await analyzeImageService.SendWebImage(imageUrlToAnalyze);
+    var result = await analyzeImageService.GetImageAnalysis(acceptedOperationId);
+
+    Console.WriteLine("Image OCR analysis result");
+    Console.WriteLine();
+
+    var lines = result.AnalyzeResult.ReadResults.SelectMany(x => x.Lines);
+
+    foreach(var line in lines){
+        Console.WriteLine(line.Text);
+    }
+}
