@@ -17,7 +17,7 @@ var speechClient = SpeechClientFactory.Create();
 var speechRecognizerClient = SpeechClientFactory.CreateRecognizer();
 var (translateSyntethizerClient, translateClient) = SpeechClientFactory.CreateTranslator();
 
-var serviceToRun = ServiceType.ImageTagging;
+var serviceToRun = ServiceType.ImageDescribing;
 
 switch(serviceToRun)
 {
@@ -27,21 +27,13 @@ switch(serviceToRun)
     case ServiceType.ImageTagging:
         await ExecuteImageTagging();
         break;
+    case ServiceType.ImageDescribing:
+        await ExecuteImageDescribing();
+        break;
     default:
         Console.WriteLine($"Unhandled service type: {serviceToRun}");
         break;
 }
-
-#region Image tagging
-// var imageTaggingService = new ImageTagging(computerVisionClient);
-// var imageTags = await imageTaggingService.SendWebImage("https://images.unsplash.com/photo-1599140781162-68659a79e313?q=80&w=2976&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D");
-// Console.WriteLine("Image tags: ");
-
-// foreach(var tag in imageTags){
-//     Console.WriteLine($"{tag.Name} - {tag.Confidence} [{tag.Hint}]");
-// }
-
-#endregion
 
 #region Image description 
 // var service = new ImageDescription(computerVisionClient);
@@ -310,4 +302,21 @@ async Task ExecuteImageTagging()
     foreach(var tag in imageTags){
         Console.WriteLine($"{tag.Name} - {tag.Confidence} [{tag.Hint}]");
     }
+}
+
+async Task ExecuteImageDescribing()
+{
+    // bearded men photo
+    var imageUrlToAnalyze = "https://images.unsplash.com/photo-1480455624313-e29b44bbfde1?q=80&w=3270&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
+
+    var computerVisionClient = ComputerVisionClientFactory.Create();
+    var service = new ImageDescription(computerVisionClient);
+    var response = await service.SendWebImage(imageUrlToAnalyze);
+    Console.WriteLine("Image description: ");
+
+    foreach(var capition in response.Captions){
+        Console.WriteLine($"{capition.Text} - {capition.Confidence}");
+    }
+
+    Console.WriteLine($"Tags: {string.Join(',',response.Tags)}");
 }
