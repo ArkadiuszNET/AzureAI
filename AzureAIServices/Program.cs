@@ -14,11 +14,10 @@ Console.WriteLine();
 
 var faceClient = FaceClientFactory.Create();
 var languageClient = LanguageClientFactory.Create();
-var speechClient = SpeechClientFactory.Create();
 var speechRecognizerClient = SpeechClientFactory.CreateRecognizer();
 var (translateSyntethizerClient, translateClient) = SpeechClientFactory.CreateTranslator();
 
-var serviceToRun = ServiceType.LanguageDetection;
+var serviceToRun = ServiceType.TextToSpeech;
 
 switch(serviceToRun)
 {
@@ -53,6 +52,7 @@ switch(serviceToRun)
         await ExecuteLanguageDetection();
         break;
     case ServiceType.TextToSpeech:
+        await ExecuteTextToSpeech();
         break;
     case ServiceType.SpeechToText:
         break;
@@ -63,40 +63,6 @@ switch(serviceToRun)
         break;
 }
 
-
-
-#region Text to speech
-
-// var textToSpeechInput = "Ejzi nie opierdalaj się w robocie!";
-
-// var result = await speechClient.SpeakTextAsync(textToSpeechInput);
-// OutputSpeechSynthesisResult(result, textToSpeechInput);
-
-// static void OutputSpeechSynthesisResult(SpeechSynthesisResult speechSynthesisResult, string text)
-// {
-//     switch (speechSynthesisResult.Reason)
-//     {
-//         case ResultReason.SynthesizingAudioCompleted:
-//             Console.WriteLine($"Speech synthesized for text: [{text}]");
-//             File.WriteAllBytes("/Users/arkadiuszoleksy/Desktop/text.wav", speechSynthesisResult!.AudioData);
-//             break;
-//         case ResultReason.Canceled:
-//             var cancellation = SpeechSynthesisCancellationDetails.FromResult(speechSynthesisResult);
-//             Console.WriteLine($"CANCELED: Reason={cancellation.Reason}");
-
-//             if (cancellation.Reason == CancellationReason.Error)
-//             {
-//                 Console.WriteLine($"CANCELED: ErrorCode={cancellation.ErrorCode}");
-//                 Console.WriteLine($"CANCELED: ErrorDetails=[{cancellation.ErrorDetails}]");
-//                 Console.WriteLine($"CANCELED: Did you set the speech resource key and region values?");
-//             }
-//             break;
-//         default:
-//             break;
-//     }
-// }
-
-#endregion
 
 #region Speech to text
 
@@ -342,4 +308,38 @@ async Task ExecuteLanguageDetection()
     var response = await languageClient.DetectLanguageAsync(languageDetectInput, null, CancellationToken.None);
 
     Console.WriteLine($"The language: {response.Value.Name}[{response.Value.Iso6391Name}] - {response.Value.ConfidenceScore}");
+}
+
+async Task ExecuteTextToSpeech()
+{
+    var textToSpeechInput = "Nie czas na kawę!";
+    var filePathWithSynthesizedText = "/Users/arkadiuszoleksy/Desktop/text.wav";
+
+    var speechClient = SpeechClientFactory.Create();
+    var result = await speechClient.SpeakTextAsync(textToSpeechInput);
+    OutputSpeechSynthesisResult(result, textToSpeechInput);
+
+    void OutputSpeechSynthesisResult(SpeechSynthesisResult speechSynthesisResult, string text)
+    {
+        switch (speechSynthesisResult.Reason)
+        {
+            case ResultReason.SynthesizingAudioCompleted:
+                Console.WriteLine($"Speech synthesized for text: [{text}]");
+                File.WriteAllBytes(filePathWithSynthesizedText, speechSynthesisResult!.AudioData);
+                break;
+            case ResultReason.Canceled:
+                var cancellation = SpeechSynthesisCancellationDetails.FromResult(speechSynthesisResult);
+                Console.WriteLine($"CANCELED: Reason={cancellation.Reason}");
+
+                if (cancellation.Reason == CancellationReason.Error)
+                {
+                    Console.WriteLine($"CANCELED: ErrorCode={cancellation.ErrorCode}");
+                    Console.WriteLine($"CANCELED: ErrorDetails=[{cancellation.ErrorDetails}]");
+                    Console.WriteLine($"CANCELED: Did you set the speech resource key and region values?");
+                }
+                break;
+            default:
+                break;
+        }
+    }
 }
