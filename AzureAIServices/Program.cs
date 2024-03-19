@@ -18,7 +18,7 @@ var speechClient = SpeechClientFactory.Create();
 var speechRecognizerClient = SpeechClientFactory.CreateRecognizer();
 var (translateSyntethizerClient, translateClient) = SpeechClientFactory.CreateTranslator();
 
-var serviceToRun = ServiceType.CustomVision;
+var serviceToRun = ServiceType.ExtractEntityInformation;
 
 switch(serviceToRun)
 {
@@ -44,6 +44,7 @@ switch(serviceToRun)
         await ExecuteCustomVision();
         break;
     case ServiceType.ExtractEntityInformation:
+        await ExecuteExtractEntityInformation();
         break;
     case ServiceType.SentimentAnalysis:
         break;
@@ -340,5 +341,18 @@ async Task ExecuteCustomVision()
     else
     {
         Console.WriteLine("Custom vision - empty result");
+    }
+}
+
+async Task ExecuteExtractEntityInformation() 
+{
+    var textToDetect = "Microsoft Azure, often referred to as Azure is a cloud computing platform run by Microsoft. It offers access, management, and the development of applications and services through global data centers. It also provides a range of capabilities, including software as a service (SaaS), platform as a service (PaaS), and infrastructure as a service (IaaS). Microsoft Azure supports many programming languages, tools, and frameworks, including Microsoft-specific and third-party software and systems. Azure was first introduced at the Professional Developers Conference (PDC) in October 2008 under the codename 'Project Red Dog.' It was officially launched as Windows Azure in February 2010 and later renamed Microsoft Azure on March 25, 2014";
+
+    var response = await languageClient.RecognizeEntitiesAsync(textToDetect);
+
+    Console.WriteLine($"Text to detect: \n\n{textToDetect}\n\n");
+
+    foreach(var phrase in response.Value){
+        Console.WriteLine($"{phrase.Text} - {phrase.Category}[{phrase.SubCategory}] - {phrase.ConfidenceScore}");
     }
 }
