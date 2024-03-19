@@ -1,4 +1,4 @@
-namespace AzureAIServices.FacialRecognition;
+namespace AzureAIServices.Services.CustomVision;
 
 using System.Net.Http.Headers;
 using AzureAIServices.Options;
