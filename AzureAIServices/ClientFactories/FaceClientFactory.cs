@@ -13,5 +13,4 @@ public static class FaceClientFactory
             Endpoint = AzureSettings.FaceAPI.Endpoint 
         };
     }
-
 }

@@ -6,8 +6,9 @@ using Microsoft.CognitiveServices.Speech;
 using Microsoft.CognitiveServices.Speech.Translation;
 using AzureAIServices.Services;
 using AzureAIServices.Services.CustomVision;
+using Azure.AI.Vision.ImageAnalysis;
 
-var serviceToRun = ServiceType.OCR;
+var serviceToRun = ServiceType.ImageAnalyzeExtended;
 
 Console.WriteLine("Azure Cognitive Services - .NET quickstart example");
 Console.WriteLine();
@@ -25,6 +26,9 @@ switch(serviceToRun)
         break;
     case ServiceType.ImageAnalyze:
         await ExecuteImageAnalyze();
+        break;
+    case ServiceType.ImageAnalyzeExtended:
+        await ExecuteImageAnalyzeExtended();
         break;
     case ServiceType.ImageThumbnail:
         await ExecuteImageThumbnail();
@@ -135,6 +139,106 @@ async Task ExecuteImageAnalyze()
     Console.WriteLine($"Is Racy: {response.Adult.IsRacyContent} - [{response.Adult.RacyScore}]");
     Console.WriteLine($"Is Gore: {response.Adult.IsGoryContent} - [{response.Adult.GoreScore}]");
     Console.WriteLine($"Is Adult: {response.Adult.IsAdultContent} - [{response.Adult.AdultScore}]");
+}
+
+async Task ExecuteImageAnalyzeExtended()
+{
+    var client = ImageAnalysisClientFactory.Create();
+
+    var imageUrl = new Uri("https://images.unsplash.com/photo-1579451619868-0ae6573504e8?q=80&w=3087&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D");
+
+    var visualFeatures = VisualFeatures.Caption | 
+        VisualFeatures.DenseCaptions | 
+        VisualFeatures.Objects |
+        VisualFeatures.Tags |
+        VisualFeatures.People;
+    
+    var result = await client.AnalyzeAsync(imageUrl, visualFeatures, default, CancellationToken.None);
+
+    // Display analysis results
+    // Get image captions
+    if (result.Value.Caption.Text != null)
+    {
+        Console.WriteLine(" Caption:");
+        Console.WriteLine($"   \"{result.Value.Caption.Text}\", Confidence {result.Value.Caption.Confidence:0.00}\n");
+    }
+
+    // Get image dense captions
+    Console.WriteLine(" Dense Captions:");
+    foreach (DenseCaption denseCaption in result.Value.DenseCaptions.Values)
+    {
+        Console.WriteLine($"   Caption: '{denseCaption.Text}', Confidence: {denseCaption.Confidence:0.00}");
+    }
+
+    // Get image tags
+    if (result.Value.Tags.Values.Count > 0)
+    {
+        Console.WriteLine($"\n Tags:");
+        foreach (DetectedTag tag in result.Value.Tags.Values)
+        {
+            Console.WriteLine($"   '{tag.Name}', Confidence: {tag.Confidence:F2}");
+        }
+    }
+
+    // Get objects in the image
+    if (result.Value.Objects.Values.Count > 0)
+    {
+        Console.WriteLine(" Objects:");
+
+        // USE IMAGE SHARP INSTEAD - System.Drawing is designed for windows, not cross platform
+        // // Prepare image for drawing
+        // Image image = Image.FromFile("/Users/arkadiuszoleksy/Documents/Projects/Azure/AzureAI/AzureAIServices/images/man_street.jpg");
+        // Graphics graphics = Graphics.FromImage(image);
+        // Pen pen = new Pen(Color.Cyan, 3);
+        // Font font = new Font("Arial", 16);
+        // SolidBrush brush = new SolidBrush(Color.WhiteSmoke);
+
+        foreach (DetectedObject detectedObject in result.Value.Objects.Values)
+        {
+            Console.WriteLine($"   \"{detectedObject.Tags[0].Name}\"");
+
+            // // Draw object bounding box
+            // var r = detectedObject.BoundingBox;
+            // Rectangle rect = new Rectangle(r.X, r.Y, r.Width, r.Height);
+            // graphics.DrawRectangle(pen, rect);
+            // graphics.DrawString(detectedObject.Tags[0].Name,font,brush,(float)r.X, (float)r.Y);
+        }
+
+        // // Save annotated image
+        // String output_file = "objects.jpg";
+        // image.Save(output_file);
+        // Console.WriteLine("  Results saved in " + output_file + "\n");
+    }
+
+
+    // Get people in the image
+    if (result.Value.People.Values.Count > 0)
+    {
+        Console.WriteLine($" People:");
+
+        // Prepare image for drawing
+        // System.Drawing.Image image = System.Drawing.Image.FromFile(imageFile);
+        // Graphics graphics = Graphics.FromImage(image);
+        // Pen pen = new Pen(Color.Cyan, 3);
+        // Font font = new Font("Arial", 16);
+        // SolidBrush brush = new SolidBrush(Color.WhiteSmoke);
+
+        foreach (DetectedPerson person in result.Value.People.Values)
+        {
+            // Draw object bounding box
+            // var r = person.BoundingBox;
+            // Rectangle rect = new Rectangle(r.X, r.Y, r.Width, r.Height);
+            // graphics.DrawRectangle(pen, rect);
+
+            // Return the confidence of the person detected
+            Console.WriteLine($"   Bounding box {person.BoundingBox.ToString()}, Confidence: {person.Confidence:F2}");
+        }
+
+        // Save annotated image
+        // String output_file = "persons.jpg";
+        // image.Save(output_file);
+        // Console.WriteLine("  Results saved in " + output_file + "\n");
+    }
 }
 
 async Task ExecuteImageThumbnail()

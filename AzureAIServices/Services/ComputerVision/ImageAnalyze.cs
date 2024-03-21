@@ -19,7 +19,7 @@ public class ImageAnalyze
             VisualFeatureTypes.Description,
             VisualFeatureTypes.Objects,
             VisualFeatureTypes.Adult,
-            VisualFeatureTypes.Tags
+            VisualFeatureTypes.Tags,
         };
         return _client.AnalyzeImageAsync(imageUrl, features);
     }

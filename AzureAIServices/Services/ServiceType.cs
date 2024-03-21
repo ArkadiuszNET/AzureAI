@@ -6,6 +6,7 @@ public enum ServiceType
     ImageTagging,
     ImageDescribing,
     ImageAnalyze,
+    ImageAnalyzeExtended,
     ImageThumbnail,
     FacialAttributes,
     CustomVision,
