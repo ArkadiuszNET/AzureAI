@@ -8,6 +8,7 @@ public enum ServiceType
     ImageAnalyze,
     ImageAnalyzeExtended,
     ImageThumbnail,
+    RemoveImageBackground,
     FacialAttributes,
     CustomVision,
     ExtractEntityInformation,

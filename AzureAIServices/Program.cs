@@ -7,8 +7,12 @@ using Microsoft.CognitiveServices.Speech.Translation;
 using AzureAIServices.Services;
 using AzureAIServices.Services.CustomVision;
 using Azure.AI.Vision.ImageAnalysis;
+using System.Net.Http.Headers;
+using System.Text.Json;
+using System.Text;
+using AzureAIServices.Options;
 
-var serviceToRun = ServiceType.ImageAnalyzeExtended;
+var serviceToRun = ServiceType.RemoveImageBackground;
 
 Console.WriteLine("Azure Cognitive Services - .NET quickstart example");
 Console.WriteLine();
@@ -29,6 +33,9 @@ switch(serviceToRun)
         break;
     case ServiceType.ImageAnalyzeExtended:
         await ExecuteImageAnalyzeExtended();
+        break;
+    case ServiceType.RemoveImageBackground:
+        await ExecuteRemoveImageBackground();
         break;
     case ServiceType.ImageThumbnail:
         await ExecuteImageThumbnail();
@@ -238,6 +245,48 @@ async Task ExecuteImageAnalyzeExtended()
         // String output_file = "persons.jpg";
         // image.Save(output_file);
         // Console.WriteLine("  Results saved in " + output_file + "\n");
+    }
+}
+
+async Task ExecuteRemoveImageBackground()
+{
+    // Remove the background from the image or generate a foreground matte
+    Console.WriteLine($" Background removal:");
+    // Define the API version and mode
+    string apiVersion = "2023-02-01-preview";
+    string mode = "foregroundMatting"; // Can be "foregroundMatting" or "backgroundRemoval"
+
+    string url = $"computervision/imageanalysis:segment?api-version={apiVersion}&mode={mode}";
+
+    var filePathWithResult = "/Users/arkadiuszoleksy/Desktop/background.png";
+
+    // Make the REST call
+    using (var client = new HttpClient())
+    {
+        var contentType = new MediaTypeWithQualityHeaderValue("application/json");
+        client.BaseAddress = new Uri(AzureSettings.ComputerVision.Endpoint);
+        client.DefaultRequestHeaders.Accept.Add(contentType);
+        client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", AzureSettings.ComputerVision.Key);
+
+        // You can change the url to use other images in the images folder,
+        // such as "building.jpg" or "person.jpg" to see different results.
+        var data = new
+        {
+            url="https://github.com/MicrosoftLearning/mslearn-ai-vision/blob/main/Labfiles/01-analyze-images/Python/image-analysis/images/street.jpg?raw=true"
+        };
+
+        var jsonData = JsonSerializer.Serialize(data);
+        var contentData = new StringContent(jsonData, Encoding.UTF8, contentType);
+        var response = await client.PostAsync(url, contentData);
+
+        if (response.IsSuccessStatusCode) {
+            File.WriteAllBytes(filePathWithResult, response.Content.ReadAsByteArrayAsync().Result);
+            Console.WriteLine("  Results saved in background.png\n");
+        }
+        else
+        {
+            Console.WriteLine($"API error: {response.ReasonPhrase} - Check your body url, key, and endpoint.");
+        }
     }
 }
 
