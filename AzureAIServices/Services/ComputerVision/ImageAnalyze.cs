@@ -17,6 +17,7 @@ public class ImageAnalyze
         var features = new List<VisualFeatureTypes?>
         {
             VisualFeatureTypes.Description,
+            VisualFeatureTypes.Faces,
             VisualFeatureTypes.Objects,
             VisualFeatureTypes.Adult,
             VisualFeatureTypes.Tags,

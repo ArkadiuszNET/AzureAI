@@ -12,7 +12,7 @@ using System.Text.Json;
 using System.Text;
 using AzureAIServices.Options;
 
-var serviceToRun = ServiceType.RemoveImageBackground;
+var serviceToRun = ServiceType.ImageAnalyze;
 
 Console.WriteLine("Azure Cognitive Services - .NET quickstart example");
 Console.WriteLine();
@@ -129,7 +129,7 @@ async Task ExecuteImageDescribing()
 async Task ExecuteImageAnalyze()
 {
     // small wound
-    var imageUrlToAnalyze = "https://www.ehbo.nl/media/1016/wond.png";
+    var imageUrlToAnalyze = "https://plus.unsplash.com/premium_photo-1670006474596-bed5f414228c?q=80&w=3135&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
 
     var computerVisionClient = ComputerVisionClientFactory.Create();
     var service = new ImageAnalyze(computerVisionClient);
@@ -137,6 +137,10 @@ async Task ExecuteImageAnalyze()
 
     foreach(var @object in response.Objects){
         Console.WriteLine($"Object: {@object.ObjectProperty}");
+    }
+
+    foreach(var @object in response.Faces){
+        Console.WriteLine($"Face: {@object.Gender} - {@object.Age} - [{@object.FaceRectangle.Left}-{@object.FaceRectangle.Top} ({@object.FaceRectangle.Width})]");
     }
 
     foreach(var tag in response.Tags){
