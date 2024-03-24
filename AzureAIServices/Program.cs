@@ -12,7 +12,7 @@ using System.Text.Json;
 using System.Text;
 using AzureAIServices.Options;
 
-var serviceToRun = ServiceType.ImageAnalyze;
+var serviceToRun = ServiceType.ImageAnalyzeExtended;
 
 Console.WriteLine("Azure Cognitive Services - .NET quickstart example");
 Console.WriteLine();
@@ -29,10 +29,10 @@ switch(serviceToRun)
         await ExecuteImageDescribing();
         break;
     case ServiceType.ImageAnalyze:
-        await ExecuteImageAnalyze();
+        await ExecuteImageAnalyze(); // more general image analyse - indicates whether content is gore or adult. Returns tags, faces etc
         break;
     case ServiceType.ImageAnalyzeExtended:
-        await ExecuteImageAnalyzeExtended();
+        await ExecuteImageAnalyzeExtended(); //handles various analysing tasks related to image - landmarks, objects, OCR, people, etc. Encompas granular functionality under one endpoint
         break;
     case ServiceType.RemoveImageBackground:
         await ExecuteRemoveImageBackground();
@@ -157,14 +157,27 @@ async Task ExecuteImageAnalyzeExtended()
     var client = ImageAnalysisClientFactory.Create();
 
     var imageUrl = new Uri("https://images.unsplash.com/photo-1579451619868-0ae6573504e8?q=80&w=3087&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D");
-
     var visualFeatures = VisualFeatures.Caption | 
         VisualFeatures.DenseCaptions | 
         VisualFeatures.Objects |
         VisualFeatures.Tags |
-        VisualFeatures.People;
+        VisualFeatures.People | 
+        VisualFeatures.Read;
     
+    var binaryData = new BinaryData(File.ReadAllBytes("images/IMG_6848.png")); //handwritten
+
     var result = await client.AnalyzeAsync(imageUrl, visualFeatures, default, CancellationToken.None);
+
+    if(result.Value.Read != null)
+    {
+        Console.WriteLine("Obtained text lines: ");
+        foreach(var line in result.Value.Read.Blocks.SelectMany(x => x.Lines)){
+            Console.WriteLine(line.Text);
+            foreach(var word in line.Words){
+                Console.WriteLine($"\t{word.Text} - {word.Confidence}");
+            }
+        }
+    }
 
     // Display analysis results
     // Get image captions
