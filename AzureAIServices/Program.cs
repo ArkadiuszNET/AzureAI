@@ -12,8 +12,12 @@ using System.Text.Json;
 using System.Text;
 using AzureAIServices.Options;
 using Azure.AI.Language.QuestionAnswering;
+using Azure.Core;
+using Azure;
+using Azure.Core.Serialization;
+using AzureAIServices.Utils;
 
-var serviceToRun = ServiceType.QuestionAnswering;
+var serviceToRun = ServiceType.ConversationAnalysis;
 
 Console.WriteLine("Azure Cognitive Services - .NET quickstart example");
 Console.WriteLine();
@@ -67,6 +71,9 @@ switch(serviceToRun)
         break;
     case ServiceType.QuestionAnswering:
         await ExecuteQuestionAnswering();
+        break;
+    case ServiceType.ConversationAnalysis:
+        await ExecuteConversationAnalysis();
         break;
     default:
         Console.WriteLine($"Unhandled service type: {serviceToRun}");
@@ -534,6 +541,111 @@ async Task ExecuteQuestionAnswering()
             Console.WriteLine($"Confidence: {answer.Confidence:P2}");
             Console.WriteLine($"Source: {answer.Source}");
             Console.WriteLine();
+        }
+
+        Console.Write("Question: ");
+        question = Console.ReadLine() ?? string.Empty;
+    }
+}
+
+async Task ExecuteConversationAnalysis()
+{
+    var client = ConversationAnalysisClientFactory.Create();
+
+    // Call the Language service model to get intent and entities
+    var projectName = "Clock";
+    var deploymentName = "production";
+
+    Console.Write("Question: ");
+    var question = Console.ReadLine() ?? string.Empty;
+
+    while(question.ToLower() != "quit")
+    {
+        var data = new
+        {
+            analysisInput = new
+            {
+                conversationItem = new
+                {
+                    text = question,
+                    id = "1",
+                    participantId = "1",
+                }
+            },
+            parameters = new
+            {
+                projectName,
+                deploymentName,
+                // Use Utf16CodeUnit for strings in .NET.
+                stringIndexType = "Utf16CodeUnit",
+            },
+            kind = "Conversation",
+        };
+        // Send request
+        Response response = await client.AnalyzeConversationAsync(RequestContent.Create(data));
+        dynamic conversationalTaskResult = response.Content.ToDynamicFromJson(JsonPropertyNames.CamelCase);
+        dynamic conversationPrediction = conversationalTaskResult.Result.Prediction;   
+        var options = new JsonSerializerOptions { WriteIndented = true };
+        Console.WriteLine(JsonSerializer.Serialize(conversationalTaskResult, options));
+        Console.WriteLine("--------------------\n");
+        Console.WriteLine(question);
+        var topIntent = "";
+        if (conversationPrediction.Intents[0].ConfidenceScore > 0.5)
+        {
+            topIntent = conversationPrediction.TopIntent;
+            switch (topIntent)
+            {
+                case "GetTime":
+                    var location = "local";           
+                    // Check for a location entity
+                    foreach (dynamic entity in conversationPrediction.Entities)
+                    {
+                        if (entity.Category == "Location")
+                        {
+                            //Console.WriteLine($"Location Confidence: {entity.ConfidenceScore}");
+                            location = entity.Text;
+                        }
+                    }
+                    // Get the time for the specified location
+                    string timeResponse = location.GetTime();
+                    Console.WriteLine(timeResponse);
+                    break;
+                case "GetDay":
+                    var date = DateTime.Today.ToShortDateString();            
+                    // Check for a Date entity
+                    foreach (dynamic entity in conversationPrediction.Entities)
+                    {
+                        if (entity.Category == "Date")
+                        {
+                            //Console.WriteLine($"Location Confidence: {entity.ConfidenceScore}");
+                            date = entity.Text;
+                        }
+                    }            
+                    // Get the day for the specified date
+                    string dayResponse = date.GetDay();
+                    Console.WriteLine(dayResponse);
+                    break;
+                case "GetDate":
+                    var day = DateTime.Today.DayOfWeek.ToString();
+                    // Check for entities            
+                    // Check for a Weekday entity
+                    foreach (dynamic entity in conversationPrediction.Entities)
+                    {
+                        if (entity.Category == "Weekday")
+                        {
+                            //Console.WriteLine($"Location Confidence: {entity.ConfidenceScore}");
+                            day = entity.Text;
+                        }
+                    }          
+                    // Get the date for the specified day
+                    string dateResponse = day.GetDate();
+                    Console.WriteLine(dateResponse);
+                    break;
+                default:
+                    // Some other intent (for example, "None") was predicted
+                    Console.WriteLine("Try asking me for the time, the day, or the date.");
+                    break;
+            }
         }
 
         Console.Write("Question: ");

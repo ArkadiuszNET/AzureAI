@@ -17,5 +17,6 @@ public enum ServiceType
     TextToSpeech,
     SpeechToText,
     SpeechToSpeechTranslation,
-    QuestionAnswering
+    QuestionAnswering,
+    ConversationAnalysis,
 }   
