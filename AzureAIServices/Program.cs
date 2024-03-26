@@ -11,8 +11,9 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text;
 using AzureAIServices.Options;
+using Azure.AI.Language.QuestionAnswering;
 
-var serviceToRun = ServiceType.ImageAnalyzeExtended;
+var serviceToRun = ServiceType.QuestionAnswering;
 
 Console.WriteLine("Azure Cognitive Services - .NET quickstart example");
 Console.WriteLine();
@@ -63,6 +64,9 @@ switch(serviceToRun)
         break;
     case ServiceType.SpeechToSpeechTranslation:
         await ExecuteSpeechToSpeechTranslation();
+        break;
+    case ServiceType.QuestionAnswering:
+        await ExecuteQuestionAnswering();
         break;
     default:
         Console.WriteLine($"Unhandled service type: {serviceToRun}");
@@ -511,5 +515,28 @@ async Task ExecuteSpeechToSpeechTranslation()
                 Console.WriteLine($"Unknown result: Reason={result.Reason}");
                 break;
         }
+    }
+}
+
+async Task ExecuteQuestionAnswering()
+{
+    var (client, project) = QuestionAnsweringClientFactory.Create();
+
+    Console.Write("Question: ");
+    var question = Console.ReadLine() ?? string.Empty;
+
+    while(question.ToLower() != "quit")
+    {
+        var response = await client.GetAnswersAsync(question, project);
+        foreach (KnowledgeBaseAnswer answer in response.Value.Answers)
+        {
+            Console.WriteLine(answer.Answer);
+            Console.WriteLine($"Confidence: {answer.Confidence:P2}");
+            Console.WriteLine($"Source: {answer.Source}");
+            Console.WriteLine();
+        }
+
+        Console.Write("Question: ");
+        question = Console.ReadLine() ?? string.Empty;
     }
 }
