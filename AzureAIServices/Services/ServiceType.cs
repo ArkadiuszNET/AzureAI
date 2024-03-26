@@ -19,4 +19,5 @@ public enum ServiceType
     SpeechToSpeechTranslation,
     QuestionAnswering,
     ConversationAnalysis,
+    ClassifyText,
 }   

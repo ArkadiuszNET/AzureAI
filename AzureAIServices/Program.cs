@@ -17,7 +17,7 @@ using Azure;
 using Azure.Core.Serialization;
 using AzureAIServices.Utils;
 
-var serviceToRun = ServiceType.ConversationAnalysis;
+var serviceToRun = ServiceType.ClassifyText;
 
 Console.WriteLine("Azure Cognitive Services - .NET quickstart example");
 Console.WriteLine();
@@ -74,6 +74,9 @@ switch(serviceToRun)
         break;
     case ServiceType.ConversationAnalysis:
         await ExecuteConversationAnalysis();
+        break;
+    case ServiceType.ClassifyText:
+        await ExecuteClassifyText();
         break;
     default:
         Console.WriteLine($"Unhandled service type: {serviceToRun}");
@@ -650,5 +653,55 @@ async Task ExecuteConversationAnalysis()
 
         Console.Write("Question: ");
         question = Console.ReadLine() ?? string.Empty;
+    }
+}
+
+async Task ExecuteClassifyText()
+{
+    var client = LanguageClientFactory.Create();
+
+    var batchedDocuments = new List<string>();
+                
+    var folderPath = Path.GetFullPath("./articles");  
+    var folder = new DirectoryInfo(folderPath);
+    var files = folder.GetFiles("*.txt");
+    
+    foreach (var file in files)
+    {
+        // Read the file contents
+        StreamReader sr = file.OpenText();
+        var text = sr.ReadToEnd();
+        sr.Close();
+        batchedDocuments.Add(text);
+    }
+
+    // Get Classifications
+    ClassifyDocumentOperation operation = await client.SingleLabelClassifyAsync(WaitUntil.Completed, batchedDocuments, "ClassifyLab", "articles");
+
+    int fileNo = 0;
+    await foreach (ClassifyDocumentResultCollection documentsInPage in operation.Value)
+    {
+        foreach (ClassifyDocumentResult documentResult in documentsInPage)
+        {
+            Console.WriteLine(files[fileNo].Name);
+            if (documentResult.HasError)
+            {
+                Console.WriteLine($"  Error!");
+                Console.WriteLine($"  Document error code: {documentResult.Error.ErrorCode}");
+                Console.WriteLine($"  Message: {documentResult.Error.Message}");
+                continue;
+            }
+
+            Console.WriteLine($"  Predicted the following class:");
+            Console.WriteLine();
+
+            foreach (ClassificationCategory classification in documentResult.ClassificationCategories)
+            {
+                Console.WriteLine($"  Category: {classification.Category}");
+                Console.WriteLine($"  Confidence score: {classification.ConfidenceScore}");
+                Console.WriteLine();
+            }
+            fileNo++;
+        }
     }
 }
