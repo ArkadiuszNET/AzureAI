@@ -20,4 +20,5 @@ public enum ServiceType
     QuestionAnswering,
     ConversationAnalysis,
     ClassifyText,
+    CustomNamedEntityRecognition,
 }   

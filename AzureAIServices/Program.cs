@@ -17,7 +17,7 @@ using Azure;
 using Azure.Core.Serialization;
 using AzureAIServices.Utils;
 
-var serviceToRun = ServiceType.ClassifyText;
+var serviceToRun = ServiceType.CustomNamedEntityRecognition;
 
 Console.WriteLine("Azure Cognitive Services - .NET quickstart example");
 Console.WriteLine();
@@ -77,6 +77,9 @@ switch(serviceToRun)
         break;
     case ServiceType.ClassifyText:
         await ExecuteClassifyText();
+        break;
+    case ServiceType.CustomNamedEntityRecognition:
+        await ExecuteCustomNamedEntityRecognition();
         break;
     default:
         Console.WriteLine($"Unhandled service type: {serviceToRun}");
@@ -662,7 +665,7 @@ async Task ExecuteClassifyText()
 
     var batchedDocuments = new List<string>();
                 
-    var folderPath = Path.GetFullPath("./articles");  
+    var folderPath = Path.GetFullPath("./resources/articles");  
     var folder = new DirectoryInfo(folderPath);
     var files = folder.GetFiles("*.txt");
     
@@ -703,5 +706,59 @@ async Task ExecuteClassifyText()
             }
             fileNo++;
         }
+    }
+}
+
+async Task ExecuteCustomNamedEntityRecognition()
+{
+    var client = LanguageClientFactory.Create();
+
+    var batchedDocuments = new List<string>();
+                
+    var folderPath = Path.GetFullPath("./resources/ads");  
+    var folder = new DirectoryInfo(folderPath);
+    var files = folder.GetFiles("*.txt");
+    
+    foreach (var file in files)
+    {
+        // Read the file contents
+        StreamReader sr = file.OpenText();
+        var text = sr.ReadToEnd();
+        sr.Close();
+        batchedDocuments.Add(text);
+    }
+
+    // Extract entities
+    RecognizeCustomEntitiesOperation operation = await client.RecognizeCustomEntitiesAsync(WaitUntil.Completed, batchedDocuments, "CustomEntityLab", "AdEntities");
+
+    await foreach (RecognizeCustomEntitiesResultCollection documentsInPage in operation.Value)
+    {
+        foreach (RecognizeEntitiesResult documentResult in documentsInPage)
+        {
+            Console.WriteLine($"Result for \"{documentResult.Id}\":");
+        if (documentResult.HasError)
+        {
+            Console.WriteLine($"  Error!");
+            Console.WriteLine($"  Document error code: {documentResult.Error.ErrorCode}");
+            Console.WriteLine($"  Message: {documentResult.Error.Message}");
+            Console.WriteLine();
+            continue;
+        }
+
+        Console.WriteLine($"  Recognized {documentResult.Entities.Count} entities:");
+
+        foreach (CategorizedEntity entity in documentResult.Entities)
+        {
+            Console.WriteLine($"  Entity: {entity.Text}");
+            Console.WriteLine($"  Category: {entity.Category}");
+            Console.WriteLine($"  Offset: {entity.Offset}");
+            Console.WriteLine($"  Length: {entity.Length}");
+            Console.WriteLine($"  ConfidenceScore: {entity.ConfidenceScore}");
+            Console.WriteLine($"  SubCategory: {entity.SubCategory}");
+            Console.WriteLine();
+        }
+
+        Console.WriteLine();
+    }
     }
 }
