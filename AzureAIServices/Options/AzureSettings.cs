@@ -21,8 +21,11 @@ public class AzureSettings
     public static ServiceOptions FaceAPI => new (_configuration.GetSection("FaceAPI:key").Value!, _configuration.GetSection("FaceAPI:endpoint").Value!);
     public static ServiceOptions CustomVision => new (_configuration.GetSection("CustomVision:key").Value!, _configuration.GetSection("CustomVision:endpoint").Value!);
     public static ServiceOptions Language => new(_configuration.GetSection("Language:key").Value!, _configuration.GetSection("Language:endpoint").Value!,
+                                                _configuration.GetSection("Language:region").Value!,
                                                 ProjectName: _configuration.GetSection("Language:projectName").Value!, DeploymentName: _configuration.GetSection("Language:deploymentName").Value!);
     public static ServiceOptions Speech => new (_configuration.GetSection("Speech:key").Value!, _configuration.GetSection("Speech:endpoint").Value!, "westeurope");
+
+    public static ServiceOptions Multi => new (_configuration.GetSection("Multi:key").Value!, _configuration.GetSection("Multi:endpoint").Value!, _configuration.GetSection("Multi:region").Value!);
 }
 
 public record ServiceOptions(string Key, string Endpoint, string? Region = null, string? ProjectName = null, string? DeploymentName = null);
