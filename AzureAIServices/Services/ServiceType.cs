@@ -15,6 +15,7 @@ public enum ServiceType
     SentimentAnalysis,
     LanguageDetection,
     TextToSpeech,
+    TextToSpeechSSML,
     SpeechToText,
     SpeechToSpeechTranslation,
     QuestionAnswering,

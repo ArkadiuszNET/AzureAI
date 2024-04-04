@@ -19,7 +19,7 @@ namespace AzureAIServices.ClientFactories
             var config = SpeechConfig.FromSubscription(AzureSettings.Speech.Key, AzureSettings.Speech.Region);
             config.SpeechSynthesisVoiceName = "pl-PL-MarekNeural";
 
-            var sourceLanguageConfig = AutoDetectSourceLanguageConfig.FromLanguages(["pl-PL"]);
+            var sourceLanguageConfig = AutoDetectSourceLanguageConfig.FromLanguages(["fr-FR","pl-PL","en-GB","de-DE"]); //at least the candidates for detection
 
             return new SpeechRecognizer(config, sourceLanguageConfig);
         }

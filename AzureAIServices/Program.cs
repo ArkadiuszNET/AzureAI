@@ -18,7 +18,7 @@ using Azure.Core.Serialization;
 using AzureAIServices.Utils;
 using Azure.AI.Translation.Text;
 
-var serviceToRun = ServiceType.Translator;
+var serviceToRun = ServiceType.SpeechToText;
 
 Console.WriteLine("Azure Cognitive Services - .NET quickstart example");
 Console.WriteLine();
@@ -63,6 +63,9 @@ switch(serviceToRun)
         break;
     case ServiceType.TextToSpeech:
         await ExecuteTextToSpeech();
+        break;
+    case ServiceType.TextToSpeechSSML:
+        await ExecuteTextToSpeechSSML();
         break;
     case ServiceType.SpeechToText:
         await ExecuteSpeechToText();
@@ -467,11 +470,52 @@ async Task ExecuteTextToSpeech()
     }
 }
 
+async Task ExecuteTextToSpeechSSML()
+{
+    string responseSsml = $@"
+        <speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='en-US'>
+            <voice name='en-GB-LibbyNeural'>
+                Hello dear students!
+                <break strength='weak'/>
+                Time to end this lab!
+            </voice>
+        </speak>";
+    var filePathWithSynthesizedText = "/Users/arkadiuszoleksy/Desktop/text.wav";
+
+    var speechClient = SpeechClientFactory.Create();
+    var result = await speechClient.SpeakSsmlAsync(responseSsml);
+    OutputSpeechSynthesisResult(result, responseSsml);
+
+    void OutputSpeechSynthesisResult(SpeechSynthesisResult speechSynthesisResult, string text)
+    {
+        switch (speechSynthesisResult.Reason)
+        {
+            case ResultReason.SynthesizingAudioCompleted:
+                Console.WriteLine($"Speech synthesized for text: [{text}]");
+                File.WriteAllBytes(filePathWithSynthesizedText, speechSynthesisResult!.AudioData);
+                break;
+            case ResultReason.Canceled:
+                var cancellation = SpeechSynthesisCancellationDetails.FromResult(speechSynthesisResult);
+                Console.WriteLine($"CANCELED: Reason={cancellation.Reason}");
+
+                if (cancellation.Reason == CancellationReason.Error)
+                {
+                    Console.WriteLine($"CANCELED: ErrorCode={cancellation.ErrorCode}");
+                    Console.WriteLine($"CANCELED: ErrorDetails=[{cancellation.ErrorDetails}]");
+                    Console.WriteLine($"CANCELED: Did you set the speech resource key and region values?");
+                }
+                break;
+            default:
+                break;
+        }
+    }
+}
+
 async Task ExecuteSpeechToText()
 {
-    Console.WriteLine("Speak to microphone...");
-
     var speechRecognizerClient = SpeechClientFactory.CreateRecognizer();
+
+    Console.WriteLine("Speak to microphone...");
     var result = await speechRecognizerClient.RecognizeOnceAsync();
 
     Console.WriteLine("Processing...");
@@ -483,7 +527,8 @@ async Task ExecuteSpeechToText()
         switch (speechSynthesisResult.Reason)
         {
             case ResultReason.RecognizedSpeech:
-                Console.WriteLine($"Speech recognized: {speechSynthesisResult.Text}");
+                var languageDetected = AutoDetectSourceLanguageResult.FromResult(speechSynthesisResult);
+                Console.WriteLine($"Speech recognized: {speechSynthesisResult.Text} [{languageDetected.Language}]");
                 break;
             case ResultReason.Canceled:
                 Console.WriteLine($"CANCELED: Reason={speechSynthesisResult.Reason}");
