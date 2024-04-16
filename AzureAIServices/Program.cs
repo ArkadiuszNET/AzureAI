@@ -18,7 +18,7 @@ using Azure.Core.Serialization;
 using AzureAIServices.Utils;
 using Azure.AI.Translation.Text;
 
-var serviceToRun = ServiceType.SpeechToText;
+var serviceToRun = ServiceType.RemoveImageBackground;
 
 Console.WriteLine("Azure Cognitive Services - .NET quickstart example");
 Console.WriteLine();
@@ -54,6 +54,9 @@ switch(serviceToRun)
         break;
     case ServiceType.ExtractEntityInformation:
         await ExecuteExtractEntityInformation();
+        break;
+    case ServiceType.ExtractKeyPhrases:
+        await ExecuteExtractKeyPhrases();
         break;
     case ServiceType.SentimentAnalysis:
         await ExecuteSentimentAnalysis();
@@ -295,11 +298,11 @@ async Task ExecuteRemoveImageBackground()
     Console.WriteLine($" Background removal:");
     // Define the API version and mode
     string apiVersion = "2023-02-01-preview";
-    string mode = "foregroundMatting"; // Can be "foregroundMatting" or "backgroundRemoval"
+    string mode = "backgroundRemoval"; // Can be "foregroundMatting" or "backgroundRemoval"
 
     string url = $"computervision/imageanalysis:segment?api-version={apiVersion}&mode={mode}";
 
-    var filePathWithResult = "/Users/arkadiuszoleksy/Desktop/background.png";
+    var filePathWithResult = "/Users/arkadiuszoleksy/Desktop/arek_final.png";
 
     // Make the REST call
     using (var client = new HttpClient())
@@ -313,7 +316,7 @@ async Task ExecuteRemoveImageBackground()
         // such as "building.jpg" or "person.jpg" to see different results.
         var data = new
         {
-            url="https://github.com/MicrosoftLearning/mslearn-ai-vision/blob/main/Labfiles/01-analyze-images/Python/image-analysis/images/street.jpg?raw=true"
+            url="https://raw.githubusercontent.com/ArkadiuszNET/AzureAI/master/arek.png"
         };
 
         var jsonData = JsonSerializer.Serialize(data);
@@ -404,6 +407,20 @@ async Task ExecuteExtractEntityInformation()
 
     foreach(var phrase in response.Value){
         Console.WriteLine($"{phrase.Text} - {phrase.Category}[{phrase.SubCategory}] - {phrase.ConfidenceScore}");
+    }
+}
+
+async Task ExecuteExtractKeyPhrases() 
+{
+    var textToDetect = "Microsoft Azure, often referred to as Azure is a cloud computing platform run by Microsoft. It offers access, management, and the development of applications and services through global data centers. It also provides a range of capabilities, including software as a service (SaaS), platform as a service (PaaS), and infrastructure as a service (IaaS). Microsoft Azure supports many programming languages, tools, and frameworks, including Microsoft-specific and third-party software and systems. Azure was first introduced at the Professional Developers Conference (PDC) in October 2008 under the codename 'Project Red Dog.' It was officially launched as Windows Azure in February 2010 and later renamed Microsoft Azure on March 25, 2014";
+
+    var languageClient = LanguageClientFactory.Create();
+    var response = await languageClient.ExtractKeyPhrasesAsync(textToDetect);
+
+    Console.WriteLine($"Text to detect: \n\n{textToDetect}\n\n");
+
+    foreach(var phrase in response.Value){
+        Console.WriteLine($"{phrase}");
     }
 }
 

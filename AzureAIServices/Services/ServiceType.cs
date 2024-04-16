@@ -23,4 +23,5 @@ public enum ServiceType
     ClassifyText,
     CustomNamedEntityRecognition,
     Translator,
+    ExtractKeyPhrases,
 }   
