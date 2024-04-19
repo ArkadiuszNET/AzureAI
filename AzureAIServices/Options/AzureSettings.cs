@@ -24,7 +24,7 @@ public class AzureSettings
                                                 _configuration.GetSection("Language:region").Value!,
                                                 ProjectName: _configuration.GetSection("Language:projectName").Value!, DeploymentName: _configuration.GetSection("Language:deploymentName").Value!);
     public static ServiceOptions Speech => new (_configuration.GetSection("Speech:key").Value!, _configuration.GetSection("Speech:endpoint").Value!, "westeurope");
-
+    public static ServiceOptions DocumentIntelligence => new (_configuration.GetSection("Document:key").Value!, _configuration.GetSection("Document:endpoint").Value!);
     public static ServiceOptions Multi => new (_configuration.GetSection("Multi:key").Value!, _configuration.GetSection("Multi:endpoint").Value!, _configuration.GetSection("Multi:region").Value!);
 }
 

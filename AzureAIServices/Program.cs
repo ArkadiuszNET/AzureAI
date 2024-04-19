@@ -18,7 +18,7 @@ using Azure.Core.Serialization;
 using AzureAIServices.Utils;
 using Azure.AI.Translation.Text;
 
-var serviceToRun = ServiceType.RemoveImageBackground;
+var serviceToRun = ServiceType.AnalyzeDocument;
 
 Console.WriteLine("Azure Cognitive Services - .NET quickstart example");
 Console.WriteLine();
@@ -90,6 +90,9 @@ switch(serviceToRun)
         break;
     case ServiceType.Translator:
         await ExecuteTranslator();
+        break;
+    case ServiceType.AnalyzeDocument:
+        await ExecuteAnalyzeDocument();
         break;
     default:
         Console.WriteLine($"Unhandled service type: {serviceToRun}");
@@ -868,4 +871,21 @@ async Task ExecuteTranslator()
             Console.WriteLine($"'{inputText}' translated from {sourceLanguage} to {translation?.Translations[0].To} as '{translation?.Translations?[0]?.Text}'.");
         }
     } 
+}
+
+async Task ExecuteAnalyzeDocument()
+{
+    var client = DocumentIntelligenceClientFactory.Create();
+
+    var requestContent = File.ReadAllBytes("/Users/arkadiuszoleksy/Desktop/IMG_6848.jpeg");
+    var source = new Azure.AI.DocumentIntelligence.AnalyzeDocumentContent()
+    {
+        Base64Source = new BinaryData(requestContent)
+    };
+    var result = await client.AnalyzeDocumentAsync(WaitUntil.Completed, "prebuilt-layout", source);
+
+    foreach(var style in result.Value.Styles)
+    {
+        Console.WriteLine($"Is handwritten: {style.IsHandwritten}");
+    }
 }

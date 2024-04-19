@@ -24,4 +24,5 @@ public enum ServiceType
     CustomNamedEntityRecognition,
     Translator,
     ExtractKeyPhrases,
+    AnalyzeDocument,
 }   
